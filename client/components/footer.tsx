@@ -1,5 +1,5 @@
-import Link from "next/link"
 import { Phone, Mail, MapPin } from "lucide-react"
+import { PrefetchLink } from "./prefetch-link"
 
 export function Footer() {
   return (
@@ -18,21 +18,21 @@ export function Footer() {
           <div>
             <h4 className="text-sm font-medium tracking-wide text-foreground mb-4">Навигация</h4>
             <nav className="flex flex-col space-y-3">
-              <Link href="/" className="text-sm font-light text-muted-foreground transition-colors hover:text-primary">
+              <PrefetchLink href="/" className="text-sm font-light text-muted-foreground transition-colors hover:text-primary">
                 Каталог
-              </Link>
-              <Link
+              </PrefetchLink>
+              <PrefetchLink
                 href="/delivery"
                 className="text-sm font-light text-muted-foreground transition-colors hover:text-primary"
               >
                 Доставка
-              </Link>
-              <Link
+              </PrefetchLink>
+              <PrefetchLink
                 href="/about"
                 className="text-sm font-light text-muted-foreground transition-colors hover:text-primary"
               >
                 О нас
-              </Link>
+              </PrefetchLink>
             </nav>
           </div>
 
@@ -51,11 +51,11 @@ export function Footer() {
               </a>
               <div className="flex items-center space-x-2 text-sm font-light text-muted-foreground">
                 <Mail className="h-4 w-4" />
-                <span>info@orchid-shop.ru</span>
+                <span>orhideyanhk@offilive.com</span>
               </div>
               <div className="flex items-center space-x-2 text-sm font-light text-muted-foreground">
                 <MapPin className="h-4 w-4" />
-                <span>Москва, Россия</span>
+                <span>Находка, Россия</span>
               </div>
             </div>
           </div>

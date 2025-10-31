@@ -118,7 +118,7 @@ export default function AboutPage() {
                       <div className="w-2 h-2 rounded-full bg-primary mt-2 shrink-0" />
                       <p className="text-base font-light text-foreground/80 leading-relaxed">
                         <span className="font-medium">Быстрая доставка:</span> Доставим ваш заказ в течение 2-4 часов по
-                        Москве
+                        Находке
                       </p>
                     </li>
                     <li className="flex items-start gap-3">

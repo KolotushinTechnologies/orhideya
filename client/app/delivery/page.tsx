@@ -18,7 +18,7 @@ export default function DeliveryPage() {
                 Доставка и оплата
               </h1>
               <p className="text-lg font-light text-muted-foreground text-pretty">
-                Быстрая и бережная доставка ваших букетов по Москве
+                Быстрая и бережная доставка ваших букетов по Находке
               </p>
             </div>
           </div>
@@ -36,7 +36,7 @@ export default function DeliveryPage() {
                   <div className="flex-1">
                     <h3 className="text-lg font-medium tracking-wide mb-2">Бесплатная доставка</h3>
                     <p className="text-sm font-light text-muted-foreground leading-relaxed">
-                      При заказе от 3000 ₽ доставка по Москве бесплатная
+                      При заказе от 3000 ₽ доставка по Находке бесплатная
                     </p>
                   </div>
                 </div>
@@ -85,7 +85,7 @@ export default function DeliveryPage() {
                   <div className="flex items-start gap-4 pb-6 border-b border-border/40">
                     <MapPin className="h-5 w-5 text-primary mt-1 shrink-0" />
                     <div className="flex-1">
-                      <h3 className="text-lg font-medium tracking-wide mb-2">В пределах МКАД</h3>
+                      <h3 className="text-lg font-medium tracking-wide mb-2">В пределах города</h3>
                       <p className="text-sm font-light text-muted-foreground mb-3">
                         Бесплатная доставка при заказе от 3000 ₽
                       </p>
@@ -103,8 +103,8 @@ export default function DeliveryPage() {
                   <div className="flex items-start gap-4 pb-6 border-b border-border/40">
                     <MapPin className="h-5 w-5 text-primary mt-1 shrink-0" />
                     <div className="flex-1">
-                      <h3 className="text-lg font-medium tracking-wide mb-2">За МКАД (до 10 км)</h3>
-                      <p className="text-sm font-light text-muted-foreground mb-3">Доставка в ближайшее Подмосковье</p>
+                      <h3 className="text-lg font-medium tracking-wide mb-2">За пределы города (до 10 км)</h3>
+                      <p className="text-sm font-light text-muted-foreground mb-3">Доставка в ближайшие пригороды</p>
                       <div className="flex items-center gap-4 text-sm">
                         <span className="text-muted-foreground">Стоимость:</span>
                         <span className="font-medium">500 ₽</span>
@@ -119,9 +119,9 @@ export default function DeliveryPage() {
                   <div className="flex items-start gap-4">
                     <MapPin className="h-5 w-5 text-primary mt-1 shrink-0" />
                     <div className="flex-1">
-                      <h3 className="text-lg font-medium tracking-wide mb-2">За МКАД (более 10 км)</h3>
+                      <h3 className="text-lg font-medium tracking-wide mb-2">За пределы города (более 10 км)</h3>
                       <p className="text-sm font-light text-muted-foreground mb-3">
-                        Доставка в отдаленные районы Подмосковья
+                        Доставка в отдаленные районы Приморского края
                       </p>
                       <div className="flex items-center gap-4 text-sm">
                         <span className="text-muted-foreground">Стоимость:</span>

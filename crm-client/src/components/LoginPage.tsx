@@ -105,7 +105,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               marginBottom: "0.5rem",
             }}
           >
-            FlowerCRM
+            Орхидея Админ
           </h1>
           <p
             style={{
@@ -114,7 +114,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
               textAlign: "center",
             }}
           >
-            powered by KolTech Pro 1n
+            от KolTech Pro 1n
           </p>
         </div>
 

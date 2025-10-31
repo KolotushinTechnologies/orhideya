@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Menu, Phone, X } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { PrefetchLink } from "./prefetch-link"
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -13,32 +14,32 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 group">
+          <PrefetchLink href="/" className="flex items-center space-x-2 group">
             <div className="text-3xl font-light tracking-wider text-primary transition-colors group-hover:text-accent">
               Орхидея
             </div>
-          </Link>
+          </PrefetchLink>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link
+            <PrefetchLink
               href="/"
               className="text-sm font-light tracking-wide text-foreground/80 transition-colors hover:text-primary"
             >
               Каталог
-            </Link>
-            <Link
+            </PrefetchLink>
+            <PrefetchLink
               href="/delivery"
               className="text-sm font-light tracking-wide text-foreground/80 transition-colors hover:text-primary"
             >
               Доставка
-            </Link>
-            <Link
+            </PrefetchLink>
+            <PrefetchLink
               href="/about"
               className="text-sm font-light tracking-wide text-foreground/80 transition-colors hover:text-primary"
             >
               О нас
-            </Link>
+            </PrefetchLink>
           </nav>
 
           {/* Contact Button */}
@@ -60,31 +61,31 @@ export function Header() {
           </Button>
         </div>
 
-        {/* Mobile Menu */}
+          {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 animate-fade-in-up">
             <nav className="flex flex-col space-y-4">
-              <Link
+              <PrefetchLink
                 href="/"
                 className="text-sm font-light tracking-wide text-foreground/80 transition-colors hover:text-primary"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Каталог
-              </Link>
-              <Link
+              </PrefetchLink>
+              <PrefetchLink
                 href="/delivery"
                 className="text-sm font-light tracking-wide text-foreground/80 transition-colors hover:text-primary"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Доставка
-              </Link>
-              <Link
+              </PrefetchLink>
+              <PrefetchLink
                 href="/about"
                 className="text-sm font-light tracking-wide text-foreground/80 transition-colors hover:text-primary"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 О нас
-              </Link>
+              </PrefetchLink>
               <a
                 href="https://wa.me/79147195502"
                 target="_blank"

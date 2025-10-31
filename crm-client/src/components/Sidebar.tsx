@@ -66,7 +66,7 @@ export default function Sidebar({ currentPage, onNavigate, onLogout }: SidebarPr
               lineHeight: "1.2",
             }}
           >
-            FlowerCRM
+            Орхидея Админ
           </h2>
           <p
             style={{
@@ -75,7 +75,7 @@ export default function Sidebar({ currentPage, onNavigate, onLogout }: SidebarPr
               opacity: 0.7,
             }}
           >
-            powered by KolTech Pro 1n
+            от KolTech Pro 1n
           </p>
         </div>
       </div>

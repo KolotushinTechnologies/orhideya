@@ -10,6 +10,8 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { ProductDetailSkeleton } from "@/components/product-detail-skeleton"
+import { useLikes } from "@/context/likes-context"
 import { getProduct, getProducts } from "@/lib/api"
 import type { Product } from "@/lib/types"
 
@@ -19,11 +21,11 @@ interface ProductPageProps {
 
 export default function ProductPage({ params }: ProductPageProps) {
   const { id } = use(params)
+  const { isLiked, toggleLike, getLikeCount } = useLikes()
   const [product, setProduct] = useState<Product | null>(null)
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
-  const [isLiked, setIsLiked] = useState(false)
   const [imageError, setImageError] = useState<boolean[]>([])
 
   useEffect(() => {
@@ -60,8 +62,8 @@ export default function ProductPage({ params }: ProductPageProps) {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <p className="text-lg text-muted-foreground">Загрузка товара...</p>
+        <main className="flex-1">
+          <ProductDetailSkeleton />
         </main>
         <Footer />
       </div>
@@ -201,10 +203,17 @@ export default function ProductPage({ params }: ProductPageProps) {
                 <Button
                   variant="outline"
                   size="lg"
-                  onClick={() => setIsLiked(!isLiked)}
-                  className={isLiked ? "text-red-500 border-red-500" : ""}
+                  onClick={() => toggleLike(id)}
+                  className={isLiked(id) ? "text-red-500 border-red-500" : ""}
                 >
-                  <Heart className={`h-5 w-5 ${isLiked ? "fill-red-500" : ""}`} />
+                  <div className="relative">
+                    <Heart className={`h-5 w-5 ${isLiked(id) ? "fill-red-500" : ""}`} />
+                    {getLikeCount(id) > 0 && (
+                      <span className="absolute -bottom-2 -right-2 flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-medium rounded-full h-4 w-4">
+                        {getLikeCount(id)}
+                      </span>
+                    )}
+                  </div>
                 </Button>
                 <Button variant="outline" size="lg" onClick={handleShare}>
                   <Share2 className="h-5 w-5" />
@@ -222,7 +231,7 @@ export default function ProductPage({ params }: ProductPageProps) {
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                      <span>Бесплатная доставка по Москве</span>
+                      <span>Бесплатная доставка по Находке</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-primary mt-0.5 shrink-0" />

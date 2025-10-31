@@ -7,11 +7,13 @@ import { Search, SlidersHorizontal } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/product-card"
+import { ProductCardSkeleton } from "@/components/product-card-skeleton"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 import { getProducts, getCategories } from "@/lib/api"
 import type { FilterState, ProductCategory, Product } from "@/lib/types"
 
@@ -155,6 +157,7 @@ export default function CatalogPage() {
             value={filters.searchQuery}
             onChange={handleSearchChange}
             className="pl-9"
+            disabled={loading}
           />
         </div>
       </div>
@@ -163,22 +166,35 @@ export default function CatalogPage() {
       <div className="space-y-3">
         <h3 className="text-sm font-medium tracking-wide">Категории</h3>
         <div className="space-y-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => handleCategoryChange(cat.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-light transition-colors ${
-                    filters.category === cat.id
-                      ? "bg-primary/10 text-primary"
-                      : "text-foreground/70 hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-              <span>{cat.name}</span>
-              <Badge variant="outline" className="text-xs">
-                {cat.count}
-              </Badge>
-            </button>
-          ))}
+          {loading ? (
+            // Skeleton categories during loading
+            Array(5).fill(0).map((_, index) => (
+              <div 
+                key={index}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-md"
+              >
+                <Skeleton className="h-5 w-24 bg-muted" />
+                <Skeleton className="h-5 w-8 bg-muted rounded-full" />
+              </div>
+            ))
+          ) : (
+            categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => handleCategoryChange(cat.id)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-light transition-colors ${
+                  filters.category === cat.id
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground/70 hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <span>{cat.name}</span>
+                <Badge variant="outline" className="text-xs">
+                  {cat.count}
+                </Badge>
+              </button>
+            ))
+          )}
         </div>
       </div>
 
@@ -186,32 +202,52 @@ export default function CatalogPage() {
       <div className="space-y-4">
         <h3 className="text-sm font-medium tracking-wide">Цена</h3>
         <div className="px-2">
-          <Slider
-            min={2000}
-            max={8000}
-            step={100}
-            value={filters.priceRange}
-            onValueChange={handlePriceRangeChange}
-            className="mb-4"
-          />
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>{filters.priceRange[0].toLocaleString("ru-RU")} ₽</span>
-            <span>{filters.priceRange[1].toLocaleString("ru-RU")} ₽</span>
-          </div>
+          {loading ? (
+            <>
+              <Skeleton className="h-5 w-full mb-4 bg-muted" />
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-5 w-16 bg-muted" />
+                <Skeleton className="h-5 w-16 bg-muted" />
+              </div>
+            </>
+          ) : (
+            <>
+              <Slider
+                min={2000}
+                max={8000}
+                step={100}
+                value={filters.priceRange}
+                onValueChange={handlePriceRangeChange}
+                className="mb-4"
+                disabled={loading}
+              />
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>{filters.priceRange[0].toLocaleString("ru-RU")} ₽</span>
+                <span>{filters.priceRange[1].toLocaleString("ru-RU")} ₽</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       {/* Stock Availability */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium tracking-wide">Наличие</h3>
-        <label className="flex items-center space-x-3 cursor-pointer">
-          <Checkbox checked={filters.inStockOnly} onCheckedChange={handleStockToggle} />
-          <span className="text-sm font-light text-foreground/80">Только в наличии</span>
-        </label>
+        {loading ? (
+          <div className="flex items-center space-x-3">
+            <Skeleton className="h-5 w-5 bg-muted" />
+            <Skeleton className="h-5 w-32 bg-muted" />
+          </div>
+        ) : (
+          <label className="flex items-center space-x-3 cursor-pointer">
+            <Checkbox checked={filters.inStockOnly} onCheckedChange={handleStockToggle} disabled={loading} />
+            <span className="text-sm font-light text-foreground/80">Только в наличии</span>
+          </label>
+        )}
       </div>
 
       {/* Reset Filters */}
-      <Button variant="outline" onClick={resetFilters} className="w-full bg-transparent">
+      <Button variant="outline" onClick={resetFilters} className="w-full bg-transparent" disabled={loading}>
         Сбросить фильтры
       </Button>
     </aside>
@@ -230,7 +266,7 @@ export default function CatalogPage() {
                 Изысканные букеты для особенных моментов
               </h1>
               <p className="text-lg font-light text-muted-foreground text-pretty">
-                Премиальные цветочные композиции с доставкой по Москве
+                Премиальные цветочные композиции с доставкой по Находке
               </p>
             </div>
           </div>
@@ -273,8 +309,10 @@ export default function CatalogPage() {
               </div>
 
               {loading ? (
-                <div className="text-center py-16">
-                  <p className="text-lg text-muted-foreground mb-4">Загрузка товаров...</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {Array(6).fill(0).map((_, index) => (
+                    <ProductCardSkeleton key={index} />
+                  ))}
                 </div>
               ) : filteredProducts.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
