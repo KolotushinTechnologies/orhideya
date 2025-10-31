@@ -35,6 +35,13 @@ interface ServerCategory {
   updatedAt: string;
 }
 
+interface ServerTag {
+  _id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Auth token management
 let authToken: string | null = localStorage.getItem('authToken');
 
@@ -73,17 +80,39 @@ const getFetchOptions = (options: RequestInit = {}): RequestInit => {
 
 // Convert server product to client product
 export const mapServerProductToClient = (product: ServerProduct): Product => {
+  let imageUrl = "http://localhost:8080/vibrant-flower-bouquet.png"; // Default image
+  
+  if (product.images && product.images.length > 0) {
+    const imagePath = product.images[0];
+    
+    // Check if the image path is already a full URL
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      imageUrl = imagePath;
+    } 
+    // Check if it's a path starting with /uploads
+    else if (imagePath.startsWith('/uploads/')) {
+      imageUrl = `http://localhost:8080${imagePath}`;
+    }
+    // Check if it's just a filename
+    else if (!imagePath.includes('/')) {
+      imageUrl = `http://localhost:8080/uploads/${imagePath}`;
+    }
+    // Otherwise, use as is
+    else {
+      imageUrl = imagePath;
+    }
+  }
+  
   return {
     id: product._id,
     name: product.name,
     price: product.price,
-    image: product.images.length > 0 
-      ? (product.images[0].startsWith('/') 
-          ? `http://localhost:8080${product.images[0]}` 
-          : `${API_URL}/uploads/${product.images[0]}`)
-      : "http://localhost:8080/vibrant-flower-bouquet.png",
+    image: imageUrl,
+    images: product.images || [imageUrl],
     category: product.category.name,
     tags: product.tags.map(tag => tag.name),
+    inStock: product.inStock || 0,
+    description: product.description || "",
     createdAt: new Date(product.createdAt),
   };
 };
@@ -193,6 +222,39 @@ export const createProduct = async (product: {
   }
 };
 
+// Update product
+export const updateProduct = async (
+  id: string,
+  product: {
+    name?: string;
+    description?: string;
+    price?: number;
+    category?: string;
+    inStock?: number;
+    featured?: boolean;
+    tags?: string[];
+    images?: string[];
+  }
+): Promise<Product> => {
+  try {
+    const response = await fetch(`${API_URL}/products/${id}`, getFetchOptions({
+      method: 'PUT',
+      body: JSON.stringify(product),
+    }));
+    
+    const data: ApiResponse<ServerProduct> = await response.json();
+    
+    if (!data.success) {
+      throw new Error(`Failed to update product with id ${id}`);
+    }
+    
+    return mapServerProductToClient(data.data);
+  } catch (error) {
+    console.error(`Error updating product ${id}:`, error);
+    throw error;
+  }
+};
+
 // Delete product
 export const deleteProduct = async (id: string): Promise<void> => {
   try {
@@ -271,11 +333,86 @@ export const deleteCategory = async (id: string): Promise<void> => {
   }
 };
 
+// Get all tags
+export const getTags = async (): Promise<ServerTag[]> => {
+  try {
+    const response = await fetch(`${API_URL}/tags`, getFetchOptions());
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error('Failed to fetch tags');
+    }
+    
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching tags:', error);
+    return [];
+  }
+};
+
+// Create tag
+export const createTag = async (name: string): Promise<ServerTag> => {
+  try {
+    const response = await fetch(`${API_URL}/tags`, getFetchOptions({
+      method: 'POST',
+      body: JSON.stringify({ name }),
+    }));
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error('Failed to create tag');
+    }
+    
+    return data.data;
+  } catch (error) {
+    console.error('Error creating tag:', error);
+    throw error;
+  }
+};
+
+// Find or create tags by names
+export const findOrCreateTags = async (tagNames: string[]): Promise<string[]> => {
+  try {
+    // Get all existing tags
+    const existingTags = await getTags();
+    
+    // Map of tag names to IDs
+    const tagMap = new Map(existingTags.map(tag => [tag.name.toLowerCase(), tag._id]));
+    
+    // Array to store tag IDs
+    const tagIds: string[] = [];
+    
+    // Process each tag name
+    for (const name of tagNames) {
+      const trimmedName = name.trim();
+      if (!trimmedName) continue;
+      
+      const lowerName = trimmedName.toLowerCase();
+      
+      // If tag exists, use its ID
+      if (tagMap.has(lowerName)) {
+        tagIds.push(tagMap.get(lowerName)!);
+      } else {
+        // Otherwise create a new tag
+        const newTag = await createTag(trimmedName);
+        tagIds.push(newTag._id);
+      }
+    }
+    
+    return tagIds;
+  } catch (error) {
+    console.error('Error processing tags:', error);
+    throw error;
+  }
+};
+
 // Upload image
 export const uploadImage = async (file: File): Promise<string> => {
   try {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('image', file);
     
     // For FormData, we don't set Content-Type as the browser will set it with the boundary
     const response = await fetch(`${API_URL}/upload`, {
@@ -292,7 +429,19 @@ export const uploadImage = async (file: File): Promise<string> => {
       throw new Error('Failed to upload image');
     }
     
-    return data.data.path;
+    console.log('Upload response:', data);
+    
+    // Make sure we return the filePath from the response
+    // This should be a path like /uploads/image-filename.jpg
+    if (data.data && data.data.filePath) {
+      // Ensure the path starts with /uploads/
+      if (!data.data.filePath.startsWith('/uploads/')) {
+        return `/uploads/${data.data.filePath.split('/').pop()}`;
+      }
+      return data.data.filePath;
+    } else {
+      throw new Error('Invalid image path in server response');
+    }
   } catch (error) {
     console.error('Error uploading image:', error);
     throw error;

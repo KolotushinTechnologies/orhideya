@@ -1,6 +1,8 @@
 "use client"
 
-import { LayoutDashboard, Package, Tag, LogOut, Flower2 } from "lucide-react"
+import { useState } from "react"
+import { LayoutDashboard, Package, Tag, LogOut, Flower2, AlertTriangle } from "lucide-react"
+import ModalPortal from "./ModalPortal"
 
 interface SidebarProps {
   currentPage: "dashboard" | "products" | "categories"
@@ -9,6 +11,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ currentPage, onNavigate, onLogout }: SidebarProps) {
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false)
+  
   const menuItems = [
     { id: "dashboard" as const, label: "Дашборд", icon: LayoutDashboard },
     { id: "products" as const, label: "Товары", icon: Package },
@@ -82,9 +86,13 @@ export default function Sidebar({ currentPage, onNavigate, onLogout }: SidebarPr
           const isActive = currentPage === item.id
 
           return (
-            <button
+            <a
               key={item.id}
-              onClick={() => onNavigate(item.id)}
+              href={item.id === "dashboard" ? "#" : `#${item.id}`}
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigate(item.id);
+              }}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -99,6 +107,7 @@ export default function Sidebar({ currentPage, onNavigate, onLogout }: SidebarPr
                 textAlign: "left",
                 transition: "all 0.2s",
                 cursor: "pointer",
+                textDecoration: "none",
               }}
               onMouseEnter={(e) => {
                 if (!isActive) {
@@ -113,13 +122,13 @@ export default function Sidebar({ currentPage, onNavigate, onLogout }: SidebarPr
             >
               <Icon size={20} />
               {item.label}
-            </button>
+            </a>
           )
         })}
       </nav>
 
       <button
-        onClick={onLogout}
+        onClick={() => setShowLogoutConfirmation(true)}
         style={{
           display: "flex",
           alignItems: "center",
@@ -148,6 +157,111 @@ export default function Sidebar({ currentPage, onNavigate, onLogout }: SidebarPr
         <LogOut size={20} />
         Выход
       </button>
+
+      {/* Диалог подтверждения выхода */}
+      <ModalPortal isOpen={showLogoutConfirmation}>
+          <div
+            style={{
+              background: "var(--color-bg-card)",
+              borderRadius: "var(--radius-xl)",
+              width: "100%",
+              maxWidth: "400px",
+              boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: "1.5rem",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  background: "#fef2f2",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: "1rem",
+                }}
+              >
+                <AlertTriangle size={28} color="#ef4444" />
+              </div>
+              
+              <h3
+                style={{
+                  fontSize: "1.25rem",
+                  fontWeight: "700",
+                  color: "var(--color-text-primary)",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                Подтверждение выхода
+              </h3>
+              
+              <p
+                style={{
+                  fontSize: "0.9375rem",
+                  color: "var(--color-text-secondary)",
+                  marginBottom: "1.5rem",
+                }}
+              >
+                Вы действительно хотите выйти из системы?
+              </p>
+              
+              <div
+                style={{
+                  display: "flex",
+                  gap: "0.75rem",
+                  width: "100%",
+                }}
+              >
+                <button
+                  onClick={() => setShowLogoutConfirmation(false)}
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem",
+                    background: "var(--color-bg-light)",
+                    color: "var(--color-text-primary)",
+                    border: "none",
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "0.9375rem",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                  }}
+                >
+                  Отмена
+                </button>
+                
+                <button
+                  onClick={() => {
+                    onLogout();
+                    setShowLogoutConfirmation(false);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem",
+                    background: "#ef4444",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "0.9375rem",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                  }}
+                >
+                  Выйти
+                </button>
+              </div>
+            </div>
+          </div>
+      </ModalPortal>
     </aside>
   )
 }

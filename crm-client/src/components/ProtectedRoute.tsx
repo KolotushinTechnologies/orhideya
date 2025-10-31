@@ -11,22 +11,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   requiredRole = 'admin' 
 }) => {
-  const { isAuthenticated, user, loading } = useAuth();
-
-  // Show loading state
-  if (loading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
-      }}>
-        <div style={{ color: 'white', fontSize: '1.5rem' }}>Loading...</div>
-      </div>
-    );
-  }
+  const { isAuthenticated, user } = useAuth();
 
   // Check if user is authenticated
   if (!isAuthenticated) {

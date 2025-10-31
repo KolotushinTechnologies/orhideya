@@ -3,41 +3,68 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Plus, Trash2, X, Upload } from "lucide-react"
+import { Plus, Trash2, X, Upload, AlertTriangle, Edit } from "lucide-react"
 import type { Product, Category } from "../App"
+import ModalPortal from "./ModalPortal"
+import MultipleImageUploader from "./MultipleImageUploader"
 
 interface ProductsPageProps {
   products: Product[]
   categories: Category[]
-  onAddProduct: (product: Omit<Product, "id" | "createdAt">) => void
+  onAddProduct: (product: Omit<Product, "id" | "createdAt"> & { id?: string }) => void
   onDeleteProduct: (id: string) => void
 }
 
 export default function ProductsPage({ products, categories, onAddProduct, onDeleteProduct }: ProductsPageProps) {
   const [showModal, setShowModal] = useState(false)
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<string | null>(null)
   const [formData, setFormData] = useState({
+    id: "", // For editing
     name: "",
     price: "",
-    image: "",
+    images: [] as string[],
     category: "",
     tags: "",
+    inStock: "10", // Default stock
+    description: "", // Description field
   })
+  
+  const [isEditMode, setIsEditMode] = useState(false)
+  
+  const handleImagesUploaded = (imagePaths: string[]) => {
+    setFormData({ ...formData, images: imagePaths })
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    onAddProduct({
-      name: formData.name,
-      price: Number(formData.price),
-      image: formData.image || "http://localhost:8080/vibrant-flower-bouquet.png",
-      category: formData.category,
-      tags: formData.tags
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
-    })
+      const productData = {
+        name: formData.name,
+        price: Number(formData.price),
+        image: formData.images.length > 0 ? formData.images[0] : "http://localhost:8080/vibrant-flower-bouquet.png",
+        images: formData.images,
+        category: formData.category,
+        inStock: Number(formData.inStock),
+        description: formData.description,
+        tags: formData.tags
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
+      }
+      
+      if (isEditMode && formData.id) {
+        // Pass the ID for editing
+        onAddProduct({
+          ...productData,
+          id: formData.id
+        })
+      } else {
+        onAddProduct(productData)
+      }
 
-    setFormData({ name: "", price: "", image: "", category: "", tags: "" })
+    setFormData({ id: "", name: "", price: "", images: [], category: "", tags: "", inStock: "10", description: "" })
+    setIsEditMode(false)
     setShowModal(false)
   }
 
@@ -73,7 +100,12 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
         </div>
 
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            // Reset form data when opening the modal for adding a new product
+            setFormData({ id: "", name: "", price: "", images: [], category: "", tags: "", inStock: "10", description: "" })
+            setIsEditMode(false)
+            setShowModal(true)
+          }}
           style={{
             display: "flex",
             alignItems: "center",
@@ -129,7 +161,7 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
               e.currentTarget.style.transform = "translateY(0)"
             }}
           >
-            <div style={{ position: "relative" }}>
+                <div style={{ position: "relative" }}>
               <img
                 src={product.image || "http://localhost:8080/placeholder.svg"}
                 alt={product.name}
@@ -139,35 +171,77 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
                   objectFit: "cover",
                 }}
               />
-              <button
-                onClick={() => onDeleteProduct(product.id)}
-                style={{
-                  position: "absolute",
-                  top: "0.75rem",
-                  right: "0.75rem",
-                  width: "36px",
-                  height: "36px",
-                  background: "rgba(239, 68, 68, 0.9)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "var(--radius-md)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#ef4444"
-                  e.currentTarget.style.transform = "scale(1.1)"
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(239, 68, 68, 0.9)"
-                  e.currentTarget.style.transform = "scale(1)"
-                }}
-              >
-                <Trash2 size={18} />
-              </button>
+              <div style={{ position: "absolute", top: "0.75rem", right: "0.75rem", display: "flex", gap: "0.5rem" }}>
+                <button
+                  onClick={() => {
+                    // Set form data for editing
+                    setFormData({
+                      id: product.id,
+                      name: product.name,
+                      price: product.price.toString(),
+                      images: product.images || [product.image],
+                      category: product.category,
+                      tags: product.tags.join(", "),
+                      inStock: product.inStock.toString(),
+                      description: product.description || "",
+                    })
+                    setIsEditMode(true)
+                    setShowModal(true)
+                  }}
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    background: "rgba(59, 130, 246, 0.9)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "var(--radius-md)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#3b82f6"
+                    e.currentTarget.style.transform = "scale(1.1)"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(59, 130, 246, 0.9)"
+                    e.currentTarget.style.transform = "scale(1)"
+                  }}
+                >
+                  <Edit size={18} />
+                </button>
+                <button
+                  onClick={() => {
+                    setProductToDelete(product.id)
+                    setShowDeleteConfirmation(true)
+                  }}
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    background: "rgba(239, 68, 68, 0.9)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "var(--radius-md)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#ef4444"
+                    e.currentTarget.style.transform = "scale(1.1)"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "rgba(239, 68, 68, 0.9)"
+                    e.currentTarget.style.transform = "scale(1)"
+                  }}
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
             </div>
 
             <div style={{ padding: "1.25rem" }}>
@@ -242,19 +316,116 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
         ))}
       </div>
 
-      {showModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "1rem",
-            zIndex: 1000,
-          }}
-        >
+      {/* Диалог подтверждения удаления */}
+      <ModalPortal isOpen={showDeleteConfirmation}>
+          <div
+            style={{
+              background: "var(--color-bg-card)",
+              borderRadius: "var(--radius-xl)",
+              width: "100%",
+              maxWidth: "400px",
+              boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: "1.5rem",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  background: "#fef2f2",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: "1rem",
+                }}
+              >
+                <AlertTriangle size={28} color="#ef4444" />
+              </div>
+              
+              <h3
+                style={{
+                  fontSize: "1.25rem",
+                  fontWeight: "700",
+                  color: "var(--color-text-primary)",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                Подтверждение удаления
+              </h3>
+              
+              <p
+                style={{
+                  fontSize: "0.9375rem",
+                  color: "var(--color-text-secondary)",
+                  marginBottom: "1.5rem",
+                }}
+              >
+                Вы действительно хотите удалить этот товар? Это действие нельзя отменить.
+              </p>
+              
+              <div
+                style={{
+                  display: "flex",
+                  gap: "0.75rem",
+                  width: "100%",
+                }}
+              >
+                <button
+                  onClick={() => setShowDeleteConfirmation(false)}
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem",
+                    background: "var(--color-bg-light)",
+                    color: "var(--color-text-primary)",
+                    border: "none",
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "0.9375rem",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                  }}
+                >
+                  Отмена
+                </button>
+                
+                <button
+                  onClick={() => {
+                    if (productToDelete) {
+                      onDeleteProduct(productToDelete)
+                      setProductToDelete(null)
+                    }
+                    setShowDeleteConfirmation(false)
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem",
+                    background: "#ef4444",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "0.9375rem",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                  }}
+                >
+                  Удалить
+                </button>
+              </div>
+            </div>
+          </div>
+      </ModalPortal>
+
+      {/* Модальное окно добавления товара */}
+      <ModalPortal isOpen={showModal}>
           <div
             style={{
               background: "var(--color-bg-card)",
@@ -275,17 +446,21 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
                 borderBottom: "1px solid var(--color-border)",
               }}
             >
-              <h2
+                <h2
                 style={{
                   fontSize: "1.5rem",
                   fontWeight: "700",
                   color: "var(--color-text-primary)",
                 }}
               >
-                Добавить товар
+                {isEditMode ? "Редактировать товар" : "Добавить товар"}
               </h2>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false)
+                  setFormData({ id: "", name: "", price: "", images: [], category: "", tags: "", inStock: "10", description: "" })
+                  setIsEditMode(false)
+                }}
                 style={{
                   width: "32px",
                   height: "32px",
@@ -385,36 +560,12 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
                       marginBottom: "0.5rem",
                     }}
                   >
-                    URL изображения (опционально)
+                    Изображения товара
                   </label>
-                  <div style={{ position: "relative" }}>
-                    <Upload
-                      size={18}
-                      style={{
-                        position: "absolute",
-                        left: "0.75rem",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        color: "var(--color-text-secondary)",
-                      }}
-                    />
-                    <input
-                      type="text"
-                      value={formData.image}
-                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                      placeholder="https://example.com/image.jpg"
-                      style={{
-                        width: "100%",
-                        padding: "0.75rem 0.75rem 0.75rem 2.75rem",
-                        border: "1px solid var(--color-border)",
-                        borderRadius: "var(--radius-md)",
-                        fontSize: "0.9375rem",
-                        outline: "none",
-                        background: "#ffffff",
-                        color: "#1e293b",
-                      }}
-                    />
-                  </div>
+                  <MultipleImageUploader 
+                    onImagesUploaded={handleImagesUploaded}
+                    initialImages={formData.images}
+                  />
                 </div>
 
                 <div>
@@ -463,6 +614,68 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
                       marginBottom: "0.5rem",
                     }}
                   >
+                    Количество в наличии
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.inStock}
+                    onChange={(e) => setFormData({ ...formData, inStock: e.target.value })}
+                    placeholder="10"
+                    min="0"
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: "var(--radius-md)",
+                      fontSize: "0.9375rem",
+                      outline: "none",
+                      background: "#ffffff",
+                      color: "#1e293b",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      fontSize: "0.875rem",
+                      fontWeight: "500",
+                      color: "var(--color-text-primary)",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    Описание товара
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="Красивый букет из свежих цветов..."
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: "var(--radius-md)",
+                      fontSize: "0.9375rem",
+                      outline: "none",
+                      background: "#ffffff",
+                      color: "#1e293b",
+                      minHeight: "100px",
+                      resize: "vertical",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    style={{
+                      display: "block",
+                      fontSize: "0.875rem",
+                      fontWeight: "500",
+                      color: "var(--color-text-primary)",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
                     Теги (через запятую)
                   </label>
                   <input
@@ -492,7 +705,11 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
                 >
                   <button
                     type="button"
-                    onClick={() => setShowModal(false)}
+                    onClick={() => {
+                      setShowModal(false)
+                      setFormData({ id: "", name: "", price: "", images: [], category: "", tags: "", inStock: "10", description: "" })
+                      setIsEditMode(false)
+                    }}
                     style={{
                       flex: 1,
                       padding: "0.875rem",
@@ -522,14 +739,13 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
                       transition: "all 0.2s",
                     }}
                   >
-                    Добавить
+                    {isEditMode ? "Сохранить" : "Добавить"}
                   </button>
                 </div>
               </div>
             </form>
           </div>
-        </div>
-      )}
+      </ModalPortal>
     </div>
   )
 }

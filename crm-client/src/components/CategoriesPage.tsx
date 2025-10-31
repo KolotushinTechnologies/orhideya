@@ -3,8 +3,9 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Plus, Trash2, X } from "lucide-react"
+import { Plus, Trash2, X, AlertTriangle } from "lucide-react"
 import type { Category } from "../App"
+import ModalPortal from "./ModalPortal"
 
 interface CategoriesPageProps {
   categories: Category[]
@@ -24,6 +25,8 @@ const colorOptions = [
 
 export default function CategoriesPage({ categories, onAddCategory, onDeleteCategory }: CategoriesPageProps) {
   const [showModal, setShowModal] = useState(false)
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: "",
     color: "#10b981",
@@ -126,7 +129,10 @@ export default function CategoriesPage({ categories, onAddCategory, onDeleteCate
             }}
           >
             <button
-              onClick={() => onDeleteCategory(category.id)}
+              onClick={() => {
+                setCategoryToDelete(category.id)
+                setShowDeleteConfirmation(true)
+              }}
               style={{
                 position: "absolute",
                 top: "1rem",
@@ -200,19 +206,116 @@ export default function CategoriesPage({ categories, onAddCategory, onDeleteCate
         ))}
       </div>
 
-      {showModal && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0, 0, 0, 0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "1rem",
-            zIndex: 1000,
-          }}
-        >
+      {/* Диалог подтверждения удаления */}
+      <ModalPortal isOpen={showDeleteConfirmation}>
+          <div
+            style={{
+              background: "var(--color-bg-card)",
+              borderRadius: "var(--radius-xl)",
+              width: "100%",
+              maxWidth: "400px",
+              boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                padding: "1.5rem",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: "60px",
+                  height: "60px",
+                  background: "#fef2f2",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: "1rem",
+                }}
+              >
+                <AlertTriangle size={28} color="#ef4444" />
+              </div>
+              
+              <h3
+                style={{
+                  fontSize: "1.25rem",
+                  fontWeight: "700",
+                  color: "var(--color-text-primary)",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                Подтверждение удаления
+              </h3>
+              
+              <p
+                style={{
+                  fontSize: "0.9375rem",
+                  color: "var(--color-text-secondary)",
+                  marginBottom: "1.5rem",
+                }}
+              >
+                Вы действительно хотите удалить эту категорию? Это действие нельзя отменить.
+              </p>
+              
+              <div
+                style={{
+                  display: "flex",
+                  gap: "0.75rem",
+                  width: "100%",
+                }}
+              >
+                <button
+                  onClick={() => setShowDeleteConfirmation(false)}
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem",
+                    background: "var(--color-bg-light)",
+                    color: "var(--color-text-primary)",
+                    border: "none",
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "0.9375rem",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                  }}
+                >
+                  Отмена
+                </button>
+                
+                <button
+                  onClick={() => {
+                    if (categoryToDelete) {
+                      onDeleteCategory(categoryToDelete)
+                      setCategoryToDelete(null)
+                    }
+                    setShowDeleteConfirmation(false)
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "0.75rem",
+                    background: "#ef4444",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "var(--radius-md)",
+                    fontSize: "0.9375rem",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                  }}
+                >
+                  Удалить
+                </button>
+              </div>
+            </div>
+          </div>
+      </ModalPortal>
+
+      {/* Модальное окно добавления категории */}
+      <ModalPortal isOpen={showModal}>
           <div
             style={{
               background: "var(--color-bg-card)",
@@ -394,8 +497,7 @@ export default function CategoriesPage({ categories, onAddCategory, onDeleteCate
               </div>
             </form>
           </div>
-        </div>
-      )}
+      </ModalPortal>
     </div>
   )
 }
