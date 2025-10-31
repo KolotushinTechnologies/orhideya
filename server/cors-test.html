@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>CORS Test Page</h1>
+    
+    <div>
+        <h2>Test GET Request</h2>
+        <button id="testGet">Test GET /cors-test</button>
+        <button id="testHealth">Test GET /health</button>
+    </div>
+    
+    <div>
+        <h2>Test POST Request</h2>
+        <button id="testPost">Test POST /cors-test</button>
+        <button id="testLogin">Test POST /api/auth/login</button>
+    </div>
+    
+    <div>
+        <h2>Results:</h2>
+        <pre id="results">Results will appear here...</pre>
+    </div>
+
+    <script>
+        const resultsElement = document.getElementById('results');
+        const baseUrl = 'http://localhost:5000';
+        
+        function displayResult(title, data) {
+            resultsElement.textContent = `${title}:\n${JSON.stringify(data, null, 2)}`;
+        }
+        
+        function displayError(title, error) {
+            resultsElement.textContent = `${title} Error:\n${error.message || error}`;
+            console.error(error);
+        }
+        
+        // Test GET /cors-test
+        document.getElementById('testGet').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${baseUrl}/cors-test`);
+                const data = await response.json();
+                displayResult('GET /cors-test Response', data);
+            } catch (error) {
+                displayError('GET /cors-test', error);
+            }
+        });
+        
+        // Test GET /health
+        document.getElementById('testHealth').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${baseUrl}/health`);
+                const data = await response.json();
+                displayResult('GET /health Response', data);
+            } catch (error) {
+                displayError('GET /health', error);
+            }
+        });
+        
+        // Test POST /cors-test
+        document.getElementById('testPost').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${baseUrl}/cors-test`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ test: 'data' })
+                });
+                const data = await response.json();
+                displayResult('POST /cors-test Response', data);
+            } catch (error) {
+                displayError('POST /cors-test', error);
+            }
+        });
+        
+        // Test POST /api/auth/login
+        document.getElementById('testLogin').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${baseUrl}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        email: 'admin@example.com', 
+                        password: 'admin123' 
+                    })
+                });
+                const data = await response.json();
+                displayResult('POST /api/auth/login Response', data);
+            } catch (error) {
+                displayError('POST /api/auth/login', error);
+            }
+        });
+    </script>
+</body>
+</html>
