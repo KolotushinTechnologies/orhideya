@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useMemo, useEffect, useCallback } from "react"
+import { useState, useMemo, useEffect, useCallback, useRef } from "react"
 import { SlidersHorizontal } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -33,6 +33,11 @@ export default function CatalogPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<{id: string, name: string, count: number}[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Infinite scroll state
+  const [displayedCount, setDisplayedCount] = useState(12) // Show 12 products initially
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+  const ITEMS_PER_PAGE = 12
 
   // Fetch products and categories
   useEffect(() => {
@@ -89,7 +94,7 @@ export default function CatalogPage() {
     // If no products loaded yet or categories not loaded, return all products
     if (products.length === 0 || categories.length === 0) return products;
     
-    return products.filter((product) => {
+    const filtered = products.filter((product) => {
       // Category filter
       if (filters.category !== "all") {
         const category = categories.find(c => c.id === filters.category)
@@ -130,7 +135,43 @@ export default function CatalogPage() {
 
       return true
     })
+    
+    return filtered
   }, [filters, products, categories])
+  
+  // Products to display with infinite scroll
+  const displayedProducts = useMemo(() => {
+    return filteredProducts.slice(0, displayedCount)
+  }, [filteredProducts, displayedCount])
+  
+  // Reset displayed count when filters change
+  useEffect(() => {
+    setDisplayedCount(ITEMS_PER_PAGE)
+  }, [filters])
+  
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0]
+        if (first.isIntersecting && displayedCount < filteredProducts.length) {
+          setDisplayedCount(prev => Math.min(prev + ITEMS_PER_PAGE, filteredProducts.length))
+        }
+      },
+      { threshold: 0.1 }
+    )
+    
+    const currentRef = loadMoreRef.current
+    if (currentRef) {
+      observer.observe(currentRef)
+    }
+    
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef)
+      }
+    }
+  }, [displayedCount, filteredProducts.length])
 
   const handleCategoryChange = (categoryId: string) => {
     setFilters((prev) => ({ ...prev, category: categoryId }))
@@ -339,11 +380,24 @@ export default function CatalogPage() {
                   ))}
                 </div>
               ) : filteredProducts.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {displayedProducts.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                  
+                  {/* Infinite scroll trigger */}
+                  {displayedCount < filteredProducts.length && (
+                    <div ref={loadMoreRef} className="mt-8 flex justify-center">
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 w-full">
+                        {Array(3).fill(0).map((_, index) => (
+                          <ProductCardSkeleton key={`loading-${index}`} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="text-center py-16">
                   <p className="text-lg text-muted-foreground mb-4">Товары не найдены</p>

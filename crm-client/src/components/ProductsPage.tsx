@@ -32,6 +32,23 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
   
   const [isEditMode, setIsEditMode] = useState(false)
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 12
+  
+  // Calculate pagination
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE)
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const endIndex = startIndex + ITEMS_PER_PAGE
+  const currentProducts = products.slice(startIndex, endIndex)
+  
+  // Reset to page 1 when products change
+  const [prevProductsLength, setPrevProductsLength] = useState(products.length)
+  if (products.length !== prevProductsLength) {
+    setPrevProductsLength(products.length)
+    setCurrentPage(1)
+  }
+  
   const handleImagesUploaded = (imagePaths: string[]) => {
     setFormData({ ...formData, images: imagePaths })
   }
@@ -139,9 +156,10 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
           gap: "1.5rem",
+          marginBottom: "2rem",
         }}
       >
-        {products.map((product) => (
+        {currentProducts.map((product) => (
           <div
             key={product.id}
             style={{
@@ -315,6 +333,91 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
           </div>
         ))}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: "0.5rem",
+            marginTop: "2rem",
+            paddingBottom: "2rem",
+          }}
+        >
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            style={{
+              padding: "0.5rem 1rem",
+              background: currentPage === 1 ? "var(--color-bg-light)" : "var(--color-bg-card)",
+              color: currentPage === 1 ? "var(--color-text-secondary)" : "var(--color-text-primary)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "var(--radius-md)",
+              fontSize: "0.875rem",
+              fontWeight: "500",
+              cursor: currentPage === 1 ? "not-allowed" : "pointer",
+              transition: "all 0.2s",
+            }}
+          >
+            Предыдущая
+          </button>
+          
+          <div style={{ display: "flex", gap: "0.25rem" }}>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  background: currentPage === page 
+                    ? "linear-gradient(135deg, #10b981 0%, #059669 100%)" 
+                    : "var(--color-bg-card)",
+                  color: currentPage === page ? "white" : "var(--color-text-primary)",
+                  border: "1px solid var(--color-border)",
+                  borderRadius: "var(--radius-md)",
+                  fontSize: "0.875rem",
+                  fontWeight: currentPage === page ? "600" : "500",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  if (currentPage !== page) {
+                    e.currentTarget.style.background = "var(--color-bg-light)"
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (currentPage !== page) {
+                    e.currentTarget.style.background = "var(--color-bg-card)"
+                  }
+                }}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+          
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            style={{
+              padding: "0.5rem 1rem",
+              background: currentPage === totalPages ? "var(--color-bg-light)" : "var(--color-bg-card)",
+              color: currentPage === totalPages ? "var(--color-text-secondary)" : "var(--color-text-primary)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "var(--radius-md)",
+              fontSize: "0.875rem",
+              fontWeight: "500",
+              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+              transition: "all 0.2s",
+            }}
+          >
+            Следующая
+          </button>
+        </div>
+      )}
 
       {/* Диалог подтверждения удаления */}
       <ModalPortal isOpen={showDeleteConfirmation}>
