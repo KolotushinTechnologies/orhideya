@@ -6,7 +6,7 @@ import DashboardHome from "./DashboardHome"
 import ProductsPage from "./ProductsPage"
 import CategoriesPage from "./CategoriesPage"
 import type { Product, Category } from "../App"
-import { getProducts, getCategories, createProduct, updateProduct, deleteProduct, createCategory, deleteCategory, findOrCreateTags } from "../api"
+import { getProducts, getProduct, getCategories, createProduct, updateProduct, deleteProduct, createCategory, deleteCategory, findOrCreateTags } from "../api"
 import { useAuth } from "../context/AuthContext"
 
 interface DashboardProps {
@@ -127,12 +127,24 @@ export default function Dashboard({ onLogout }: DashboardProps) {
       if (product.id) {
         updatedProduct = await updateProduct(product.id, serverProduct)
         
+        // Fetch the updated product again to get populated data
+        const refreshedProduct = await getProduct(product.id)
+        if (refreshedProduct) {
+          updatedProduct = refreshedProduct
+        }
+        
         // Update the product in the list
         setProducts(products.map(p => p.id === product.id ? updatedProduct : p))
       } else {
         // Create new product
-        updatedProduct = await createProduct(serverProduct)
-        setProducts([...products, updatedProduct])
+        const createdProduct = await createProduct(serverProduct)
+        
+        // Fetch the created product again to get populated data (category and tags)
+        const refreshedProduct = await getProduct(createdProduct.id)
+        updatedProduct = refreshedProduct || createdProduct
+        
+        // Add new product at the beginning of the list
+        setProducts([updatedProduct, ...products])
       }
     } catch (err) {
       console.error("Error adding product:", err)

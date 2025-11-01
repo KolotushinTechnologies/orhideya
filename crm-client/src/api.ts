@@ -238,7 +238,11 @@ export const createProduct = async (product: {
       throw new Error('Failed to create product');
     }
     
-    return mapServerProductToClient(data.data);
+    console.log('Server response for created product:', data.data);
+    const mappedProduct = mapServerProductToClient(data.data);
+    console.log('Mapped product:', mappedProduct);
+    
+    return mappedProduct;
   } catch (error) {
     console.error('Error creating product:', error);
     throw error;
