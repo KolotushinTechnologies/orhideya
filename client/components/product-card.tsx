@@ -18,6 +18,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { isLiked, toggleLike, getLikeCount } = useLikes()
   const [imageError, setImageError] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false)
   const likeCount = getLikeCount(product.id)
 
   const handleWhatsAppOrder = () => {
@@ -31,12 +32,29 @@ export function ProductCard({ product }: ProductCardProps) {
     <Card className="group overflow-hidden transition-all hover:shadow-lg">
       <PrefetchLink href={`/product/${product.id}`} className="block">
         <div className="relative aspect-square overflow-hidden bg-muted">
+          {/* Loading placeholder */}
+          {!imageLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted">
+              <div className="relative w-16 h-16 animate-spin" style={{ animationDuration: '2s' }}>
+                <Image
+                  src="/logo.svg"
+                  alt="Loading..."
+                  fill
+                  className="object-contain opacity-30"
+                />
+              </div>
+            </div>
+          )}
+          
           <Image
             src={imageError ? "/placeholder.svg?height=400&width=400" : product.images[0]}
             alt={product.name}
             fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className={`object-cover transition-all duration-300 group-hover:scale-105 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
             onError={() => setImageError(true)}
+            onLoad={() => setImageLoaded(true)}
           />
           {product.featured && (
             <Badge className="absolute top-3 left-3 bg-accent text-accent-foreground">Хит продаж</Badge>

@@ -2,91 +2,151 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
 
+const API_URL = "http://localhost:8080/api"
+
 interface LikesContextType {
-  likedProducts: Record<string, number>
-  toggleLike: (productId: string) => void
+  likedProducts: Set<string>
+  likeCounts: Record<string, number>
+  toggleLike: (productId: string) => Promise<void>
   getLikeCount: (productId: string) => number
   isLiked: (productId: string) => boolean
+  loading: boolean
 }
 
 const LikesContext = createContext<LikesContextType | undefined>(undefined)
 
 export function LikesProvider({ children }: { children: ReactNode }) {
-  const [likedProducts, setLikedProducts] = useState<Record<string, number>>({})
-  const [userIdentifier, setUserIdentifier] = useState<string>("")
-  const [isInitialized, setIsInitialized] = useState(false)
+  const [likedProducts, setLikedProducts] = useState<Set<string>>(new Set())
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({})
+  const [loading, setLoading] = useState(true)
 
-  // Generate a simple user identifier based on IP hash or random value
+  // Load user likes and all like counts on mount
   useEffect(() => {
-    const generateUserIdentifier = async () => {
+    const loadLikes = async () => {
       try {
-        // Try to get a consistent identifier from an IP service
-        const response = await fetch("https://api.ipify.org?format=json")
-        const data = await response.json()
-        const ipHash = btoa(data.ip).substring(0, 10) // Simple "hash" of the IP
-        setUserIdentifier(ipHash)
+        // Load user's liked products (by IP)
+        const userLikesResponse = await fetch(`${API_URL}/likes/user`)
+        const userLikesData = await userLikesResponse.json()
+        
+        if (userLikesData.success) {
+          setLikedProducts(new Set(userLikesData.data))
+        }
+
+        // Load all like counts
+        const countsResponse = await fetch(`${API_URL}/likes/counts`)
+        const countsData = await countsResponse.json()
+        
+        if (countsData.success) {
+          setLikeCounts(countsData.data)
+        }
       } catch (error) {
-        // Fallback to a random identifier if the service is unavailable
-        const randomId = Math.random().toString(36).substring(2, 12)
-        setUserIdentifier(randomId)
+        console.error("Error loading likes:", error)
+      } finally {
+        setLoading(false)
       }
     }
 
-    generateUserIdentifier()
+    loadLikes()
   }, [])
 
-  // Load liked products from localStorage on initial render
-  useEffect(() => {
-    if (!userIdentifier) return
-
-    const storedLikes = localStorage.getItem(`likes_${userIdentifier}`)
-    if (storedLikes) {
-      try {
-        setLikedProducts(JSON.parse(storedLikes))
-      } catch (error) {
-        console.error("Failed to parse stored likes:", error)
-        setLikedProducts({})
-      }
-    }
-    setIsInitialized(true)
-  }, [userIdentifier])
-
-  // Save liked products to localStorage whenever they change
-  useEffect(() => {
-    if (!userIdentifier || !isInitialized) return
+  // Toggle like for a product with optimistic update
+  const toggleLike = async (productId: string) => {
+    const wasLiked = likedProducts.has(productId)
+    const currentCount = likeCounts[productId] || 0
     
-    localStorage.setItem(`likes_${userIdentifier}`, JSON.stringify(likedProducts))
-  }, [likedProducts, userIdentifier, isInitialized])
-
-  // Toggle like for a product
-  const toggleLike = (productId: string) => {
-    setLikedProducts((prev) => {
-      const newLikes = { ...prev }
-      
-      if (isLiked(productId)) {
-        // If already liked by this user, remove the like
-        delete newLikes[productId]
+    // Optimistic update - update UI immediately
+    setLikedProducts(prev => {
+      const newSet = new Set(prev)
+      if (wasLiked) {
+        newSet.delete(productId)
       } else {
-        // If not liked by this user, add a like
-        newLikes[productId] = (newLikes[productId] || 0) + 1
+        newSet.add(productId)
       }
-      
-      return newLikes
+      return newSet
     })
+    
+    setLikeCounts(prev => ({
+      ...prev,
+      [productId]: wasLiked ? Math.max(0, currentCount - 1) : currentCount + 1,
+    }))
+
+    try {
+      // Send request to server
+      const response = await fetch(`${API_URL}/products/${productId}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        // Update with actual server data
+        setLikedProducts(prev => {
+          const newSet = new Set(prev)
+          if (data.data.liked) {
+            newSet.add(productId)
+          } else {
+            newSet.delete(productId)
+          }
+          return newSet
+        })
+
+        setLikeCounts(prev => ({
+          ...prev,
+          [productId]: data.data.likeCount,
+        }))
+      } else {
+        // Revert optimistic update on error
+        setLikedProducts(prev => {
+          const newSet = new Set(prev)
+          if (wasLiked) {
+            newSet.add(productId)
+          } else {
+            newSet.delete(productId)
+          }
+          return newSet
+        })
+        
+        setLikeCounts(prev => ({
+          ...prev,
+          [productId]: currentCount,
+        }))
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error)
+      
+      // Revert optimistic update on error
+      setLikedProducts(prev => {
+        const newSet = new Set(prev)
+        if (wasLiked) {
+          newSet.add(productId)
+        } else {
+          newSet.delete(productId)
+        }
+        return newSet
+      })
+      
+      setLikeCounts(prev => ({
+        ...prev,
+        [productId]: currentCount,
+      }))
+    }
   }
 
   // Get like count for a product
   const getLikeCount = (productId: string) => {
-    return likedProducts[productId] || 0
+    return likeCounts[productId] || 0
   }
 
   // Check if a product is liked by the current user
   const isLiked = (productId: string) => {
-    return !!likedProducts[productId]
+    return likedProducts.has(productId)
   }
 
   return (
-    <LikesContext.Provider value={{ likedProducts, toggleLike, getLikeCount, isLiked }}>
+    <LikesContext.Provider value={{ likedProducts, likeCounts, toggleLike, getLikeCount, isLiked, loading }}>
       {children}
     </LikesContext.Provider>
   )

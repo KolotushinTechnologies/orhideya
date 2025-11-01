@@ -15,6 +15,7 @@ import categoryRoutes from './routes/category.routes';
 import tagRoutes from './routes/tag.routes';
 import authRoutes from './routes/auth.routes';
 import uploadRoutes from './routes/upload.routes';
+import likeRoutes from './routes/like.routes';
 
 // Load environment variables
 dotenv.config();
@@ -49,6 +50,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api', likeRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {

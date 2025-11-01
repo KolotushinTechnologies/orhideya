@@ -28,6 +28,7 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
     tags: "",
     inStock: "10", // Default stock
     description: "", // Description field
+    featured: false, // Featured status
   })
   
   const [isEditMode, setIsEditMode] = useState(false)
@@ -64,6 +65,7 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
         category: formData.category,
         inStock: Number(formData.inStock),
         description: formData.description,
+        featured: formData.featured,
         tags: formData.tags
           .split(",")
           .map((t) => t.trim())
@@ -80,7 +82,7 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
         onAddProduct(productData)
       }
 
-    setFormData({ id: "", name: "", price: "", images: [], category: "", tags: "", inStock: "10", description: "" })
+    setFormData({ id: "", name: "", price: "", images: [], category: "", tags: "", inStock: "10", description: "", featured: false })
     setIsEditMode(false)
     setShowModal(false)
   }
@@ -119,7 +121,7 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
         <button
           onClick={() => {
             // Reset form data when opening the modal for adding a new product
-            setFormData({ id: "", name: "", price: "", images: [], category: "", tags: "", inStock: "10", description: "" })
+            setFormData({ id: "", name: "", price: "", images: [], category: "", tags: "", inStock: "10", description: "", featured: false })
             setIsEditMode(false)
             setShowModal(true)
           }}
@@ -202,6 +204,7 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
                       tags: product.tags.join(", "),
                       inStock: product.inStock.toString(),
                       description: product.description || "",
+                      featured: false, // Will be set from product data when we add it to Product type
                     })
                     setIsEditMode(true)
                     setShowModal(true)
@@ -561,7 +564,7 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
               <button
                 onClick={() => {
                   setShowModal(false)
-                  setFormData({ id: "", name: "", price: "", images: [], category: "", tags: "", inStock: "10", description: "" })
+                  setFormData({ id: "", name: "", price: "", images: [], category: "", tags: "", inStock: "10", description: "", featured: false })
                   setIsEditMode(false)
                 }}
                 style={{
@@ -799,6 +802,42 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
                   />
                 </div>
 
+                <div>
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      fontSize: "0.875rem",
+                      fontWeight: "500",
+                      color: "var(--color-text-primary)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.featured}
+                      onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                      style={{
+                        width: "18px",
+                        height: "18px",
+                        cursor: "pointer",
+                      }}
+                    />
+                    <span>Хит продаж</span>
+                  </label>
+                  <p
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "var(--color-text-secondary)",
+                      marginTop: "0.25rem",
+                      marginLeft: "1.625rem",
+                    }}
+                  >
+                    Товар будет отмечен как "Хит продаж" на сайте
+                  </p>
+                </div>
+
                 <div
                   style={{
                     display: "flex",
@@ -810,7 +849,7 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
                     type="button"
                     onClick={() => {
                       setShowModal(false)
-                      setFormData({ id: "", name: "", price: "", images: [], category: "", tags: "", inStock: "10", description: "" })
+                      setFormData({ id: "", name: "", price: "", images: [], category: "", tags: "", inStock: "10", description: "", featured: false })
                       setIsEditMode(false)
                     }}
                     style={{

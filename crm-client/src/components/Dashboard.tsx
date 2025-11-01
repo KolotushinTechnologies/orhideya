@@ -114,7 +114,7 @@ export default function Dashboard({ onLogout }: DashboardProps) {
         price: product.price,
         category: categories.find(c => c.name === product.category)?.id || "",
         inStock: product.inStock,  // Use the value from the form
-        featured: false,
+        featured: (product as any).featured || false,  // Use featured from form
         tags: tagIds,
         images: product.images || (product.image ? [product.image] : [])
       }
