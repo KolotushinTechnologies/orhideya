@@ -3,6 +3,13 @@ import { Footer } from "@/components/footer"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Clock, MapPin, Package, Phone, Truck, CreditCard } from "lucide-react"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Доставка и оплата | Орхидея",
+  description: "Быстрая и бережная доставка букетов по Находке. Бесплатная доставка при заказе от 3000 ₽. Различные способы оплаты.",
+  keywords: "доставка цветов, оплата, Находка, бесплатная доставка, курьерская доставка, оплата картой",
+}
 
 export default function DeliveryPage() {
   return (

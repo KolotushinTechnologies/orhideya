@@ -2,14 +2,14 @@
 
 import type React from "react"
 
-import { useState, useMemo, useEffect } from "react"
-import { Search, SlidersHorizontal } from "lucide-react"
+import { useState, useMemo, useEffect, useCallback } from "react"
+import { SlidersHorizontal } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/product-card"
 import { ProductCardSkeleton } from "@/components/product-card-skeleton"
+import { SearchInputStable } from "@/components/search-input-stable"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Slider } from "@/components/ui/slider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
@@ -25,7 +25,7 @@ interface ExtendedFilterState extends Omit<FilterState, 'category'> {
 export default function CatalogPage() {
   const [filters, setFilters] = useState<ExtendedFilterState>({
     category: "all",
-    priceRange: [2000, 8000],
+    priceRange: [0, 10000], // Default values that will be updated after products are loaded
     inStockOnly: false,
     searchQuery: "",
   })
@@ -41,6 +41,19 @@ export default function CatalogPage() {
         setLoading(true)
         const productsData = await getProducts()
         setProducts(productsData)
+        
+        // Calculate min and max prices from actual products
+        if (productsData.length > 0) {
+          const prices = productsData.map(p => p.price)
+          const minPrice = Math.floor(Math.min(...prices) / 100) * 100 // Round down to nearest 100
+          const maxPrice = Math.ceil(Math.max(...prices) / 100) * 100 // Round up to nearest 100
+          
+          // Update filters with dynamic price range
+          setFilters(prev => ({
+            ...prev,
+            priceRange: [minPrice, maxPrice]
+          }))
+        }
         
         const categoriesData = await getCategories()
         // Map server category names to client category types
@@ -71,7 +84,7 @@ export default function CatalogPage() {
     fetchData()
   }, [])
 
-  // Filter products based on current filters
+  // Memoize the filtered products to prevent unnecessary re-renders
   const filteredProducts = useMemo(() => {
     // If no products loaded yet or categories not loaded, return all products
     if (products.length === 0 || categories.length === 0) return products;
@@ -131,35 +144,46 @@ export default function CatalogPage() {
     setFilters((prev) => ({ ...prev, inStockOnly: !prev.inStockOnly }))
   }
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev) => ({ ...prev, searchQuery: e.target.value }))
-  }
+  // Handle search from the SearchInputStable component
+  // Use useCallback to prevent unnecessary re-renders
+  const handleSearch = useCallback((query: string) => {
+    setFilters(prev => {
+      // Only update if the value actually changed
+      if (prev.searchQuery === query) return prev
+      return { ...prev, searchQuery: query }
+    })
+  }, [])
 
   const resetFilters = () => {
+    // Get min and max prices from current products
+    let minPrice = 0
+    let maxPrice = 10000
+    
+    if (products.length > 0) {
+      const prices = products.map(p => p.price)
+      minPrice = Math.floor(Math.min(...prices) / 100) * 100
+      maxPrice = Math.ceil(Math.max(...prices) / 100) * 100
+    }
+    
     setFilters({
       category: "all",
-      priceRange: [2000, 8000],
+      priceRange: [minPrice, maxPrice],
       inStockOnly: false,
       searchQuery: "",
     })
   }
 
-  const FilterSidebar = () => (
+  const FilterSidebar = useMemo(() => (
     <aside className="space-y-8">
       {/* Search */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium tracking-wide">Поиск</h3>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Найти букет..."
-            value={filters.searchQuery}
-            onChange={handleSearchChange}
-            className="pl-9"
-            disabled={loading}
-          />
-        </div>
+        <SearchInputStable
+          placeholder="Найти букет..."
+          onSearch={handleSearch}
+          disabled={loading}
+          value={filters.searchQuery}
+        />
       </div>
 
       {/* Categories */}
@@ -213,8 +237,8 @@ export default function CatalogPage() {
           ) : (
             <>
               <Slider
-                min={2000}
-                max={8000}
+                min={products.length > 0 ? Math.floor(Math.min(...products.map(p => p.price)) / 100) * 100 : 0}
+                max={products.length > 0 ? Math.ceil(Math.max(...products.map(p => p.price)) / 100) * 100 : 10000}
                 step={100}
                 value={filters.priceRange}
                 onValueChange={handlePriceRangeChange}
@@ -251,7 +275,7 @@ export default function CatalogPage() {
         Сбросить фильтры
       </Button>
     </aside>
-  )
+  ), [filters, categories, loading, handleSearch, handleCategoryChange, handlePriceRangeChange, handleStockToggle, resetFilters, products])
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -278,7 +302,7 @@ export default function CatalogPage() {
             {/* Desktop Filters */}
             <div className="hidden lg:block w-64 shrink-0">
               <div className="sticky top-24">
-                <FilterSidebar />
+                {FilterSidebar}
               </div>
             </div>
 
@@ -295,7 +319,7 @@ export default function CatalogPage() {
 
               {mobileFiltersOpen && (
                 <div className="mb-8 p-6 border border-border rounded-lg bg-card">
-                  <FilterSidebar />
+                  {FilterSidebar}
                 </div>
               )}
             </div>

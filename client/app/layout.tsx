@@ -20,6 +20,11 @@ export const metadata: Metadata = {
   title: "Орхидея — Премиальный цветочный магазин",
   description: "Изысканные букеты и цветочные композиции с доставкой",
   generator: "v0.app",
+  icons: {
+    icon: "/logo.svg",
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
+  },
 }
 
 export default function RootLayout({

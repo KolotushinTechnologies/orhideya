@@ -16,41 +16,59 @@ export default function MultipleImageUploader({ onImagesUploaded, initialImages 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError('Пожалуйста, выберите изображение')
-      return
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Размер файла не должен превышать 5MB')
-      return
-    }
+    const files = e.target.files
+    if (!files || files.length === 0) return
 
     // Clear previous errors
     setError(null)
+    setIsUploading(true)
 
-    // Upload to server
     try {
-      setIsUploading(true)
-      const imagePath = await uploadImage(file)
-      
-      // Add new image to the list
-      const newImages = [...images, imagePath]
-      setImages(newImages)
-      onImagesUploaded(newImages)
+      const uploadPromises: Promise<string>[] = []
+      const invalidFiles: string[] = []
+
+      // Process each file
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          invalidFiles.push(`${file.name} (неверный формат)`)
+          continue
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          invalidFiles.push(`${file.name} (превышен размер 5MB)`)
+          continue
+        }
+
+        // Add to upload queue
+        uploadPromises.push(uploadImage(file))
+      }
+
+      // Show errors for invalid files
+      if (invalidFiles.length > 0) {
+        setError(`Некоторые файлы не были загружены: ${invalidFiles.join(', ')}`)
+      }
+
+      // Upload all valid files
+      if (uploadPromises.length > 0) {
+        const uploadedPaths = await Promise.all(uploadPromises)
+        
+        // Add new images to the list
+        const newImages = [...images, ...uploadedPaths]
+        setImages(newImages)
+        onImagesUploaded(newImages)
+      }
       
       // Reset file input
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
     } catch (err) {
-      console.error('Error uploading image:', err)
-      setError('Ошибка при загрузке изображения')
+      console.error('Error uploading images:', err)
+      setError('Ошибка при загрузке изображений')
     } finally {
       setIsUploading(false)
     }
@@ -69,6 +87,7 @@ export default function MultipleImageUploader({ onImagesUploaded, initialImages 
         <input
           type="file"
           accept="image/*"
+          multiple
           onChange={handleFileChange}
           ref={fileInputRef}
           style={{ display: 'none' }}
@@ -120,7 +139,7 @@ export default function MultipleImageUploader({ onImagesUploaded, initialImages 
                 marginBottom: '0.25rem',
               }}
             >
-              {isUploading ? 'Загрузка...' : 'Добавить изображение'}
+              {isUploading ? 'Загрузка...' : 'Добавить изображения'}
             </p>
             <p
               style={{
@@ -128,7 +147,7 @@ export default function MultipleImageUploader({ onImagesUploaded, initialImages 
                 color: 'var(--color-text-secondary)',
               }}
             >
-              PNG, JPG или WEBP (макс. 5MB)
+              PNG, JPG или WEBP (макс. 5MB). Можно выбрать несколько файлов.
             </p>
           </div>
         </label>

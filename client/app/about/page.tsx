@@ -3,6 +3,13 @@ import { Footer } from "@/components/footer"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Heart, Award, Users, Phone } from "lucide-react"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "О нас | Орхидея",
+  description: "Премиальный цветочный магазин в Находке. Создаем незабываемые моменты с помощью изысканных цветочных композиций от профессиональных флористов.",
+  keywords: "цветочный магазин, флористы, букеты, цветочные композиции, Находка, премиум цветы",
+}
 
 export default function AboutPage() {
   return (
