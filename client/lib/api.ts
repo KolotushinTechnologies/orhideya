@@ -86,14 +86,28 @@ const getFetchOptions = (options: RequestInit = {}): RequestInit => {
 // Get all products
 export const getProducts = async (): Promise<Product[]> => {
   try {
-    const response = await fetch(`${API_URL}/products`, getFetchOptions());
-    const data: ApiResponse<ServerProduct[]> = await response.json();
+    let allProducts: ServerProduct[] = [];
+    let page = 1;
+    let hasMore = true;
     
-    if (!data.success) {
-      throw new Error("Failed to fetch products");
+    // Fetch all pages
+    while (hasMore) {
+      const response = await fetch(`${API_URL}/products?page=${page}&limit=100`, getFetchOptions());
+      const data: ApiResponse<ServerProduct[]> = await response.json();
+      
+      if (!data.success) {
+        throw new Error("Failed to fetch products");
+      }
+      
+      allProducts = [...allProducts, ...data.data];
+      
+      // Check if there are more pages
+      hasMore = data.pagination?.next !== undefined;
+      page++;
     }
     
-    return data.data.map(mapServerProductToClient);
+    console.log(`Loaded ${allProducts.length} products total`);
+    return allProducts.map(mapServerProductToClient);
   } catch (error) {
     console.error("Error fetching products:", error);
     return [];

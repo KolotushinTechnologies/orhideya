@@ -149,6 +149,13 @@ export default function CatalogPage() {
     setDisplayedCount(ITEMS_PER_PAGE)
   }, [filters])
   
+  // Auto-load all products if there are not many (less than 2 pages worth)
+  useEffect(() => {
+    if (filteredProducts.length > 0 && filteredProducts.length <= ITEMS_PER_PAGE * 2) {
+      setDisplayedCount(filteredProducts.length)
+    }
+  }, [filteredProducts.length])
+  
   // Intersection Observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
