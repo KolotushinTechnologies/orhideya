@@ -62,7 +62,7 @@ export function SearchInputStable({ onSearch, placeholder = "Поиск...", dis
   
   return (
     <div className="relative w-full">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none z-10" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
       <input
         ref={inputRef}
         type="text"
@@ -72,12 +72,7 @@ export function SearchInputStable({ onSearch, placeholder = "Поиск...", dis
         onBlur={handleBlur}
         placeholder={placeholder}
         disabled={disabled}
-        className="w-full h-10 pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-        style={{ 
-          fontSize: '14px',
-          color: '#000000',
-          backgroundColor: '#ffffff'
-        }}
+        className="w-full h-10 pl-10 pr-4 py-2 bg-transparent border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         autoComplete="off"
         spellCheck={false}
       />
