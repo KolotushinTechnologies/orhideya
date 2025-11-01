@@ -10,8 +10,15 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
+    <header className="sticky top-0 z-50 w-full border-b border-white/20">
+      {/* Frosted glass effect with distortion */}
+      <div className="absolute inset-0 backdrop-blur-xl backdrop-saturate-200 backdrop-brightness-110" 
+           style={{
+             background: 'linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.05), rgba(0,0,0,0.05))',
+             boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.2), inset 0 -1px 0 0 rgba(0,0,0,0.1)',
+           }} />
+      
+      <div className="container mx-auto px-4 relative">
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
           <PrefetchLink href="/" className="flex items-center space-x-2 group">
