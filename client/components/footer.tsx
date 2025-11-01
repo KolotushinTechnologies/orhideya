@@ -1,5 +1,6 @@
 import { Phone, Mail, MapPin } from "lucide-react"
 import { PrefetchLink } from "./prefetch-link"
+import Image from "next/image"
 
 export function Footer() {
   return (
@@ -62,9 +63,29 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-border/40">
-          <p className="text-center text-sm font-light text-muted-foreground">
-            © {new Date().getFullYear()} Орхидея. Все права защищены.
-          </p>
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-center text-sm font-light text-muted-foreground">
+              © {new Date().getFullYear()} Орхидея. Все права защищены.
+            </p>
+            <div className="flex items-center gap-2 text-sm font-light text-muted-foreground">
+              <span>При поддержке</span>
+              <a
+                href="https://koltech.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center transition-opacity hover:opacity-70"
+                aria-label="KolTech - Разработка и поддержка"
+              >
+                <Image
+                  src="/KolTech1.svg"
+                  alt="KolTech"
+                  width={80}
+                  height={24}
+                  className="h-6 w-auto"
+                />
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
