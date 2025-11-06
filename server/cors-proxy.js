@@ -32,12 +32,12 @@ app.use((req, res, next) => {
 
 // Create proxy middleware
 const apiProxy = createProxyMiddleware({
-  target: 'http://localhost:8080',
+  target: 'https://api.orhideyanhk.ru',
   changeOrigin: true,
   logLevel: 'debug',
   onProxyReq: (proxyReq, req, res) => {
     // Add CORS headers to the proxy request
-    proxyReq.setHeader('Origin', 'http://localhost:8080');
+    proxyReq.setHeader('Origin', 'https://api.orhideyanhk.ru');
     
     // Log the request body for debugging
     if (req.body) {
@@ -71,5 +71,5 @@ app.use('/', apiProxy);
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`CORS Proxy server running on port ${PORT}`);
-  console.log(`Proxying requests to http://localhost:8080`);
+  console.log(`Proxying requests to https://api.orhideyanhk.ru`);
 });

@@ -1,0 +1,113 @@
+server {
+        listen 80;
+
+        server_name api.orhideyanhk.ru;
+
+        # Dynamically set CORS origin based on request origin
+        set $cors_origin "";
+        if ($http_origin ~* "^https://orhideyanhk\.ru$") {
+            set $cors_origin "https://orhideyanhk.ru";
+        }
+        if ($http_origin ~* "^https://crm\.orhideyanhk\.ru$") {
+            set $cors_origin "https://crm.orhideyanhk.ru";
+        }
+        if ($http_origin ~* "^http://localhost:3000$") {
+            set $cors_origin "http://localhost:3000";
+        }
+        if ($http_origin ~* "^http://localhost:3001$") {
+            set $cors_origin "http://localhost:3001";
+        }
+
+        location / {
+                # Add CORS headers for all responses
+                add_header 'Access-Control-Allow-Origin' $cors_origin always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, PATCH, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization, Origin, X-Requested-With, Accept, X-HTTP-Method-Override, X-CSRF-Token, Cache-Control' always;
+                add_header 'Access-Control-Allow-Credentials' 'true' always;
+                add_header 'Access-Control-Expose-Headers' 'Content-Range, X-Content-Range' always;
+                add_header 'Access-Control-Max-Age' 86400 always;
+
+                # Handle preflight requests
+                if ($request_method = 'OPTIONS') {
+                    add_header 'Access-Control-Allow-Origin' $cors_origin always;
+                    add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, PATCH, OPTIONS' always;
+                    add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization, Origin, X-Requested-With, Accept, X-HTTP-Method-Override, X-CSRF-Token, Cache-Control' always;
+                    add_header 'Access-Control-Allow-Credentials' 'true' always;
+                    add_header 'Access-Control-Max-Age' 86400 always;
+                    add_header 'Content-Type' 'text/plain; charset=utf-8';
+                    add_header 'Content-Length' 0;
+                    return 204;
+                }
+
+                proxy_pass http://80.78.243.241:8080;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_cache_bypass $http_upgrade;
+                proxy_read_timeout 86400;
+        }
+
+        location /uploads/ {
+                alias /var/www/html/orhideya/server/uploads/;
+                autoindex on;
+                expires 1d;
+                add_header Cache-Control "public, immutable";
+
+                # Set CORS headers for static files
+                add_header 'Access-Control-Allow-Origin' '*' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, HEAD, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization, Origin, X-Requested-With, Accept' always;
+
+                # Handle preflight requests for static files
+                if ($request_method = 'OPTIONS') {
+                    add_header 'Access-Control-Allow-Origin' '*' always;
+                    add_header 'Access-Control-Allow-Methods' 'GET, HEAD, OPTIONS' always;
+                    add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization, Origin, X-Requested-With, Accept' always;
+                    add_header 'Content-Type' 'text/plain; charset=utf-8';
+                    add_header 'Content-Length' 0;
+                    return 204;
+                }
+        }
+}
+
+
+server {
+
+    server_name orhideyanhk.ru;
+
+    location / {
+        proxy_pass http://80.78.243.241:3000;  # или любой порт, на котором слушает ваш Next.js-сервер
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/orhideyanhk.ru/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/orhideyanhk.ru/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = orhideyanhk.ru) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+
+    server_name orhideyanhk.ru;
+    return 404; # managed by Certbot
+
+
+}

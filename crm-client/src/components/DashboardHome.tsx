@@ -208,7 +208,7 @@ export default function DashboardHome({ products, categories }: DashboardHomePro
               }}
             >
               <img
-                src={product.image || "http://localhost:8080/placeholder.svg"}
+                src={product.image || "https://api.orhideyanhk.ru/placeholder.svg"}
                 alt={product.name}
                 style={{
                   width: "100%",

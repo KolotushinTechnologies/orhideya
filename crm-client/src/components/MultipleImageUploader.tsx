@@ -173,7 +173,7 @@ export default function MultipleImageUploader({ onImagesUploaded, initialImages 
               }}
             >
               <img
-                src={image.startsWith('/') ? `http://localhost:8080${image}` : image}
+                src={image.startsWith('/') ? `https://api.orhideyanhk.ru${image}` : image}
                 alt={`Изображение ${index + 1}`}
                 style={{
                   width: '100%',

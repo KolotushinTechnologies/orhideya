@@ -1,7 +1,7 @@
 import type { Product, ProductCategory } from "./types";
 
 // Use the CORS proxy instead of directly accessing the API server
-const API_URL = "http://localhost:8080/api";
+const API_URL = "https://api.orhideyanhk.ru/api";
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -65,7 +65,7 @@ export const mapServerProductToClient = (product: ServerProduct): Product => {
     description: product.description,
     price: product.price,
     category: mappedCategory,
-    images: product.images.map(image => image.startsWith('/') ? `http://localhost:8080${image}` : `${API_URL}/uploads/${image}`),
+    images: product.images.map(image => image.startsWith('/') ? `https://api.orhideyanhk.ru${image}` : `${API_URL}/uploads/${image}`),
     inStock: product.inStock,
     featured: product.featured,
     tags: product.tags.map(tag => tag.name),

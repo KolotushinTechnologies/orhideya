@@ -1,7 +1,7 @@
 import type { Product, Category } from "./App";
 
 // Use the CORS proxy instead of directly accessing the API server
-const API_URL = "http://localhost:8080/api";
+const API_URL = "https://api.orhideyanhk.ru/api";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -90,7 +90,7 @@ const getFetchOptions = (options: RequestInit = {}): RequestInit => {
 
 // Convert server product to client product
 export const mapServerProductToClient = (product: ServerProduct): Product => {
-  let imageUrl = "http://localhost:8080/vibrant-flower-bouquet.png"; // Default image
+  let imageUrl = "https://api.orhideyanhk.ru/vibrant-flower-bouquet.png"; // Default image
   
   if (product.images && product.images.length > 0) {
     const imagePath = product.images[0];
@@ -101,11 +101,11 @@ export const mapServerProductToClient = (product: ServerProduct): Product => {
     } 
     // Check if it's a path starting with /uploads
     else if (imagePath.startsWith('/uploads/')) {
-      imageUrl = `http://localhost:8080${imagePath}`;
+      imageUrl = `https://api.orhideyanhk.ru${imagePath}`;
     }
     // Check if it's just a filename
     else if (!imagePath.includes('/')) {
-      imageUrl = `http://localhost:8080/uploads/${imagePath}`;
+      imageUrl = `https://api.orhideyanhk.ru/uploads/${imagePath}`;
     }
     // Otherwise, use as is
     else {

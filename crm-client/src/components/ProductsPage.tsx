@@ -60,7 +60,7 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
       const productData = {
         name: formData.name,
         price: Number(formData.price),
-        image: formData.images.length > 0 ? formData.images[0] : "http://localhost:8080/vibrant-flower-bouquet.png",
+        image: formData.images.length > 0 ? formData.images[0] : "https://api.orhideyanhk.ru/vibrant-flower-bouquet.png",
         images: formData.images,
         category: formData.category,
         inStock: Number(formData.inStock),
@@ -183,7 +183,7 @@ export default function ProductsPage({ products, categories, onAddProduct, onDel
           >
                 <div style={{ position: "relative" }}>
               <img
-                src={product.image || "http://localhost:8080/placeholder.svg"}
+                src={product.image || "https://api.orhideyanhk.ru/placeholder.svg"}
                 alt={product.name}
                 style={{
                   width: "100%",
