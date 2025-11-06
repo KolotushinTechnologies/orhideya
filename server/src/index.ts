@@ -24,25 +24,35 @@ dotenv.config();
 const app = express();
 
 // Apply CORS middleware - this should be the first middleware
-app.use(corsMiddleware);
+// app.use(corsMiddleware);
 
 // Also use the cors package for extra compatibility
 // app.use(cors());
+const allowedOrigins = [
+  'https://crm.orhideyanhk.ru',
+  'https://orhideyanhk.ru',
+  'http://localhost:3000', // для разработки
+  // добавьте другие, если нужно
+];
+
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, Postman)
+    // Разрешаем запросы без origin (например, мобильные приложения, curl)
     if (!origin) return callback(null, true);
-    
-    // Allow all origins
-    return callback(null, true);
+
+    // Проверяем, разрешён ли origin
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, origin);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept', 'X-HTTP-Method-Override', 'Access-Control-Allow-Origin', 'Access-Control-Allow-Headers'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  preflightContinue: false,
-  optionsSuccessStatus: 204, // some legacy browsers (IE11, various SmartTVs) choke on 204
-  maxAge: 86400 // Cache preflight requests for 24 hours
+  optionsSuccessStatus: 204,
+  maxAge: 86400
 }));
 
 app.use(express.json());
