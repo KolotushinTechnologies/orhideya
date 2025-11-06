@@ -33,7 +33,7 @@ npm install
 
 ```
 PORT=5000
-MONGODB_URI=mongodb+srv://root:Jdjdb2334328Hdbndhj@cluster0.y6mrt.mongodb.net/orhideyastore?retryWrites=true&w=majority&appName=Cluster0
+MONGODB_URI=mongodb://localhost:27017/orchideya_dv
 JWT_SECRET=your_jwt_secret_key_here
 JWT_EXPIRES_IN=7d
 NODE_ENV=development

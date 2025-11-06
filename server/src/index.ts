@@ -86,7 +86,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 // Connect to MongoDB
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb+srv://root:Jdjdb2334328Hdbndhj@cluster0.y6mrt.mongodb.net/orhideyastore?retryWrites=true&w=majority&appName=Cluster0';
+    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/orchideya_dv';
     await mongoose.connect(mongoURI);
     console.log('MongoDB connected successfully');
   } catch (error) {
