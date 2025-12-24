@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { Upload, X, Plus, Image as ImageIcon } from "lucide-react"
+import { X, Plus } from "lucide-react"
 import { uploadImage } from "../api"
 
 interface MultipleImageUploaderProps {

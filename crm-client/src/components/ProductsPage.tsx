@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Plus, Trash2, X, Upload, AlertTriangle, Edit } from "lucide-react"
+import { Plus, Trash2, X, AlertTriangle, Edit } from "lucide-react"
 import type { Product, Category } from "../App"
 import ModalPortal from "./ModalPortal"
 import MultipleImageUploader from "./MultipleImageUploader"
